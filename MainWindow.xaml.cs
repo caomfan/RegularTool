@@ -3,6 +3,7 @@ using RegularTool.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -27,15 +28,7 @@ namespace RegularTool
         public MainWindow()
         {
             InitializeComponent();
-
         }
-
-        #region RichTextBox
-
-
-
-        #endregion
-
 
         private void BtnSearch_Click(object sender, RoutedEventArgs e)
         {
@@ -150,7 +143,7 @@ namespace RegularTool
         {
             tabOption.SelectedIndex = 4;
 
-            var code = "//matchGroups为匹配到的结果,inputText为要匹配的内容";
+            var code = "//matchGroups为匹配到的第一个结果,inputText为要匹配的内容";
             code += "\r\nstring inputText = \"\";";
             code += "\r\nRegex regex = new Regex(@\""+txtRegular.Text+"\", " + (rbMulti.IsChecked == true ? "RegexOptions.Multiline" : rbSingle.IsChecked == true ? "RegexOptions.Singleline" : "RegexOptions.IgnoreCase") + ");";
             code += "\r\nvar result = regex.Matches(inputText);";

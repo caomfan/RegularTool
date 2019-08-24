@@ -62,7 +62,7 @@
                         <TabItem Header="语法提示">
                             <TextBox Text="{Binding SelectGrammar.Content}" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True"/>
                         </TabItem>
-                        <TabItem Header="预测试文本">
+                        <TabItem Header="测试文本">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="auto"/>
