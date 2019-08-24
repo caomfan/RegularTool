@@ -1,11 +1,16 @@
-﻿using System;
+﻿using RegularTool.Model;
+using RegularTool.ViewModel;
+using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -22,44 +27,143 @@ namespace RegularTool
         public MainWindow()
         {
             InitializeComponent();
+
         }
 
-        int index = 0;//从第0个字符串开始查找
-        public void CXtxt_string()
-        {
-            string str = txtSearch.Text;//设置需要查找的字符串
-            index = txtContent.Text.IndexOf(str, index);//返回str在textBox1中的索引位置
-            if (index < 0)//如果没有找不到字符串，则return
-            {
-                index = 0;
-                txtContent.SelectionStart = 0;
-                txtContent.SelectionLength = 0;
-                MessageBox.Show("已到结尾");
-                return;
-            }
-            txtContent.SelectionStart = index;//设置需要选中字符串的开始位置
-            txtContent.SelectionLength = str.Length;//设置需要选中字符串的结束位置
-            index++;
-            txtContent.Focus();//设置焦点
+        #region RichTextBox
 
-            //int rows = textBox2.GetFirstVisibleLineIndex();//得到可见文本框中第一个字符的行索引
-            int line = txtContent.GetLineIndexFromCharacterIndex(index);//返回指定字符串索引所在的行号
-            //Debug.WriteLine(rows + ",," + line);
-            int lastline = txtContent.GetLastVisibleLineIndex();
-            if (line > lastline)
-            {
-                txtContent.ScrollToLine(lastline + 1);//滚动到视图中指定行索引
-            }
-        }
+
+
+        #endregion
+
 
         private void BtnSearch_Click(object sender, RoutedEventArgs e)
         {
+            txtContent.SelectionStart = 0;
+            txtContent.SelectAll();
+            txtContent.SelectionBackColor = System.Drawing.Color.White;
             if (txtSearch.Text == "")
             {
-                MessageBox.Show("查询字符串为空！");
+
                 return;
             }
-            CXtxt_string();
+
+            int startIndex = 0;
+            while (startIndex < txtContent.TextLength)
+            {
+                int wordStartIndex = txtContent.Find(txtSearch.Text, startIndex, System.Windows.Forms.RichTextBoxFinds.None);
+                if (wordStartIndex != -1)
+                {
+                    txtContent.SelectionStart = wordStartIndex;
+                    txtContent.SelectionLength = txtSearch.Text.Length;
+                    txtContent.SelectionBackColor = System.Drawing.Color.Yellow;
+                }
+                else
+                    break;
+                startIndex += wordStartIndex + txtSearch.Text.Length;
+            }
+        }
+
+        private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            var contentModel = e.NewValue as GrammarModel;
+            if (contentModel != null && !contentModel.IsGrouping)
+            {
+                MainVm.Instance.SelectGrammar = contentModel;
+                tabOption.SelectedIndex = 0;
+            }
+        }
+
+        private void BtnMatch_Click(object sender, RoutedEventArgs e)
+        {
+            tabOption.SelectedIndex = 2;
+            if (string.IsNullOrWhiteSpace(txtRegular.Text) || string.IsNullOrWhiteSpace(txtContent.Text))
+                return;
+            Regex regex = new Regex(txtRegular.Text, rbMulti.IsChecked == true ? RegexOptions.Multiline : rbSingle.IsChecked == true ? RegexOptions.Singleline : RegexOptions.IgnoreCase);
+
+            var result = regex.Matches(txtContent.Text);
+            if (result.Count == 0)
+                return;
+            List<List<string>> matchResults = new List<List<string>>();
+            foreach (var item in result)
+            {
+                var match = item as Match;
+                List<string> matchGroups = new List<string>();
+                for (int i = 0; i < match.Groups.Count; i++)
+                {
+                    matchGroups.Add(match.Groups[i].Value);
+                }
+                matchResults.Add(matchGroups);
+            }
+            DataTable dataTable = new DataTable();
+            dataTable.Columns.Add("序号");
+            dataTable.Columns.Add("匹配文本");
+            var count = matchResults.FirstOrDefault()?.Count;
+            if (count > 0)
+            {
+                for (int i = 1; i < count; i++)
+                {
+                    dataTable.Columns.Add("子表达式" + i);
+                }
+            }
+            for (int i = 0; i < matchResults.Count; i++)
+            {
+                var row = dataTable.NewRow();
+
+                for (int j = 0; j < matchResults[i].Count; j++)
+                {
+                    if (j == 0)
+                    {
+                        row["序号"] = i + 1;
+                        row["匹配文本"] = matchResults[i][j];
+                    }
+                    else
+                    {
+                        row["子表达式" + j] = matchResults[i][j];
+                    }
+                }
+                dataTable.Rows.Add(row);
+
+            }
+
+            dataResult.ItemsSource = dataTable.DefaultView;
+            statusMatchCount.Content = matchResults.Count;
+            statusMatchSubCount.Content = count - 1;
+        }
+
+        private void BtnReplacce_Click(object sender, RoutedEventArgs e)
+        {
+            tabOption.SelectedIndex = 3;
+
+            if (string.IsNullOrWhiteSpace(txtRegular.Text) || string.IsNullOrWhiteSpace(txtContent.Text))
+                return;
+            Regex regex = new Regex(txtRegular.Text, rbMulti.IsChecked == true ? RegexOptions.Multiline : rbSingle.IsChecked == true ? RegexOptions.Singleline : RegexOptions.IgnoreCase);
+
+            var isMatch = regex.IsMatch(txtContent.Text);
+            if (isMatch)
+            {
+                txtReplaceResult.Text = regex.Replace(txtContent.Text, txtReplace.Text);
+            }
+        }
+
+        private void BtnGenerateCode_Click(object sender, RoutedEventArgs e)
+        {
+            tabOption.SelectedIndex = 4;
+
+            var code = "//matchGroups为匹配到的结果,inputText为要匹配的内容";
+            code += "\r\nstring inputText = \"\";";
+            code += "\r\nRegex regex = new Regex(@\""+txtRegular.Text+"\", " + (rbMulti.IsChecked == true ? "RegexOptions.Multiline" : rbSingle.IsChecked == true ? "RegexOptions.Singleline" : "RegexOptions.IgnoreCase") + ");";
+            code += "\r\nvar result = regex.Matches(inputText);";
+            code += "\r\nforeach (var item in result)" +
+            "\r\n{" +
+            "\r\n   var match = item as Match;" +
+            "\r\n   List<string> matchGroups = new List<string>();" +
+            "\r\n   for (int i = 0; i < match.Groups.Count; i++)" +
+            "\r\n   {" +
+            "\r\n       matchGroups.Add(match.Groups[i].Value);" +
+            "\r\n   }" +
+            "\r\n}";
+            txtCodeEdit.Text = code;
         }
     }
 }

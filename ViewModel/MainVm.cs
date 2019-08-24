@@ -143,6 +143,19 @@ namespace RegularTool.ViewModel
         }
 
         public ObservableCollection<GrammarModel> GrammarModels { get; set; }
+
+        private GrammarModel _SelectGrammar;
+
+        public GrammarModel SelectGrammar
+        {
+            get { return _SelectGrammar; }
+            set
+            {
+                _SelectGrammar = value;
+
+                RaisePropertyChanged(() => SelectGrammar);
+            }
+        }
     }
 
 }

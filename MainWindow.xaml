@@ -4,7 +4,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RegularTool"
+        xmlns:form="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
         xmlns:vm="clr-namespace:RegularTool.ViewModel"
+        xmlns:edit="http://icsharpcode.net/sharpdevelop/avalonedit"
         mc:Ignorable="d"
         Title="正则小助手" Height="550" Width="960" WindowStartupLocation="CenterScreen">
     <Window.DataContext>
@@ -13,15 +15,20 @@
     <Window.Resources>
 
     </Window.Resources>
+    
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition MinWidth="250" Width="auto"/>
+            <ColumnDefinition MinWidth="250" Width="250"/>
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
         <Grid Margin="10">
             <DockPanel>
                 <TextBlock Text="语法：" DockPanel.Dock="Top"/>
-                <TreeView ItemsSource="{Binding GrammarModels}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="False" DockPanel.Dock="Bottom" Margin="0 10 0 0" ItemTemplate="{StaticResource ItemNode}" Style="{StaticResource DefaultTreeView}"/>
+                <TreeView SelectedItemChanged="TreeView_SelectedItemChanged" ItemsSource="{Binding GrammarModels}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="False" DockPanel.Dock="Bottom" Margin="0 10 0 0" ItemTemplate="{StaticResource ItemNode}" Style="{StaticResource DefaultTreeView}"/>
             </DockPanel>
         </Grid>
         <GridSplitter  Width="5" Background="White"/>
@@ -34,17 +41,26 @@
                         <RowDefinition Height="auto"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
-                    <TextBox TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" MinHeight="81" DockPanel.Dock="Top" AcceptsReturn="True">
+                    <TextBox x:Name="txtRegular" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" MinHeight="81" DockPanel.Dock="Top" AcceptsReturn="True">
 
                     </TextBox>
-                    <StackPanel Grid.Row="1" Orientation="Horizontal" Height="30" Margin="0 5" DockPanel.Dock="Top">
-                        <Button Content="正则匹配" Padding="5 0"/>
-                        <CheckBox Content="是否区分大小写" VerticalAlignment="Center" Margin="20 0 0 0" />
-                        <CheckBox Content="多行模式" IsChecked="True" VerticalAlignment="Center" Margin="20 0 0 0"/>
+                    <StackPanel  Grid.Row="1"  Margin="0 5" DockPanel.Dock="Top">
+                        <StackPanel Orientation="Horizontal" Height="30">
+                            <Button x:Name="btnMatch" Click="BtnMatch_Click" Content="正则匹配" Padding="5 0"/>
+                            <RadioButton x:Name="rbCaseSencitive" Content="忽略大小写" VerticalAlignment="Center" Margin="20 0 0 0" />
+                            <RadioButton x:Name="rbSingle" Content="单行模式"  VerticalAlignment="Center" Margin="20 0 0 0"/>
+                            <RadioButton x:Name="rbMulti" Content="多行模式" IsChecked="True" VerticalAlignment="Center" Margin="20 0 0 0"/>
+                            <Button x:Name="btnGenerateCode" Content="生成代码" Click="BtnGenerateCode_Click" Padding="5 0" Margin="20 0 0 0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Height="30" Margin="0 5">
+                            <Button x:Name="btnReplacce" Click="BtnReplacce_Click"  Content="正则替换" Padding="5 0"/>
+                            <TextBox x:Name="txtReplace" Width="200" Margin="20 0 0 0" Height="25" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+                        </StackPanel>
                     </StackPanel>
-                    <TabControl Grid.Row="2">
+                   
+                    <TabControl x:Name="tabOption" Grid.Row="2">
                         <TabItem Header="语法提示">
-                            <TextBox Text="1231232131" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True"/>
+                            <TextBox Text="{Binding SelectGrammar.Content}" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True"/>
                         </TabItem>
                         <TabItem Header="预测试文本">
                             <Grid>
@@ -82,17 +98,36 @@
                                         </Button.Style>
                                     </Button>
                                 </StackPanel>
-                                <TextBox x:Name="txtContent" Grid.Row="1" TextWrapping="Wrap" AcceptsReturn="True">
-                                    
-                                </TextBox>
+                               
+                                <WindowsFormsHost Grid.Row="1" Background="White">
+                                    <form:RichTextBox x:Name="txtContent"/>
+                                </WindowsFormsHost>
                             </Grid>
                         </TabItem>
-                        <TabItem Header="匹配结果"/>
-                        <TabItem Header="替换结果"/>
-                        <TabItem Header="生成代码"/>
+                        <TabItem Header="匹配结果">
+                            <DataGrid x:Name="dataResult" CanUserAddRows="False">
+                               
+                            </DataGrid>
+                        </TabItem>
+                        <TabItem Header="替换结果">
+                            <TextBox x:Name="txtReplaceResult" TextWrapping="Wrap" IsReadOnly="True" >
+                                
+                            </TextBox>
+                        </TabItem>
+                        <TabItem Header="生成代码">
+                            <edit:TextEditor x:Name="txtCodeEdit" SyntaxHighlighting="C#" />
+                        </TabItem>
                     </TabControl>
                 </Grid>
             </TabItem>
         </TabControl>
+
+        <StatusBar Grid.Row="1" Background="White" Grid.ColumnSpan="2">
+            <StatusBarItem >提示：</StatusBarItem>
+            <StatusBarItem >匹配数量：</StatusBarItem>
+            <StatusBarItem x:Name="statusMatchCount" Content="0"/>
+            <StatusBarItem >子表达式数量：</StatusBarItem>
+            <StatusBarItem x:Name="statusMatchSubCount" Content="0"/>
+        </StatusBar>
     </Grid>
 </Window>
