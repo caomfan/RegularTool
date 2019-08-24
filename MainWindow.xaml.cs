@@ -28,8 +28,8 @@ namespace RegularTool
         public MainWindow()
         {
             InitializeComponent();
+           
         }
-
         private void BtnSearch_Click(object sender, RoutedEventArgs e)
         {
             txtContent.SelectionStart = 0;
@@ -143,10 +143,11 @@ namespace RegularTool
         {
             tabOption.SelectedIndex = 4;
 
-            var code = "//matchGroups为匹配到的第一个结果,inputText为要匹配的内容";
+            var code = "//matchResults为匹配到的结果,inputText为要匹配的内容";
             code += "\r\nstring inputText = \"\";";
             code += "\r\nRegex regex = new Regex(@\""+txtRegular.Text+"\", " + (rbMulti.IsChecked == true ? "RegexOptions.Multiline" : rbSingle.IsChecked == true ? "RegexOptions.Singleline" : "RegexOptions.IgnoreCase") + ");";
             code += "\r\nvar result = regex.Matches(inputText);";
+            code += "\r\nList<List<string>> matchResults = new List<List<string>>();";
             code += "\r\nforeach (var item in result)" +
             "\r\n{" +
             "\r\n   var match = item as Match;" +
@@ -155,6 +156,7 @@ namespace RegularTool
             "\r\n   {" +
             "\r\n       matchGroups.Add(match.Groups[i].Value);" +
             "\r\n   }" +
+            "\r\n   matchResults.Add(matchGroups);" +
             "\r\n}";
             txtCodeEdit.Text = code;
         }

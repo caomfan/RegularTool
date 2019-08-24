@@ -154,7 +154,6 @@ namespace RegularTool.ViewModel
                 var grammarStr = JsonConvert.SerializeObject(GrammarModels, Formatting.Indented);
                 File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + "grammar.json", grammarStr);
             }
-
         }
 
         public ObservableCollection<GrammarModel> GrammarModels { get; set; }
