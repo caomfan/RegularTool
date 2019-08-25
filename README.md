@@ -11,3 +11,5 @@
 
 
 ![](https://i.imgur.com/xsypYju.png)
+
+软件根目录下有个`grammar.json`文件，可以自定义左侧的内容。
