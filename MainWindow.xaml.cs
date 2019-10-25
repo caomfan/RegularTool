@@ -28,7 +28,7 @@ namespace RegularTool
         public MainWindow()
         {
             InitializeComponent();
-           
+
         }
         private void BtnSearch_Click(object sender, RoutedEventArgs e)
         {
@@ -69,14 +69,27 @@ namespace RegularTool
 
         private void BtnMatch_Click(object sender, RoutedEventArgs e)
         {
+            DataTable dataTable = new DataTable();
+            int count = 0;
             tabOption.SelectedIndex = 2;
             if (string.IsNullOrWhiteSpace(txtRegular.Text) || string.IsNullOrWhiteSpace(txtContent.Text))
+            {
+                dataResult.ItemsSource = dataTable.DefaultView;
+                statusMatchCount.Content = 0;
+                statusMatchSubCount.Content = 0;
                 return;
+            }
             Regex regex = new Regex(txtRegular.Text, rbMulti.IsChecked == true ? RegexOptions.Multiline : rbSingle.IsChecked == true ? RegexOptions.Singleline : RegexOptions.IgnoreCase);
 
             var result = regex.Matches(txtContent.Text);
             if (result.Count == 0)
+            {
+
+                dataResult.ItemsSource = dataTable.DefaultView;
+                statusMatchCount.Content = 0;
+                statusMatchSubCount.Content = 0;
                 return;
+            }
             List<List<string>> matchResults = new List<List<string>>();
             foreach (var item in result)
             {
@@ -88,10 +101,9 @@ namespace RegularTool
                 }
                 matchResults.Add(matchGroups);
             }
-            DataTable dataTable = new DataTable();
             dataTable.Columns.Add("序号");
             dataTable.Columns.Add("匹配文本");
-            var count = matchResults.FirstOrDefault()?.Count;
+            count = matchResults.FirstOrDefault()?.Count ?? 0;
             if (count > 0)
             {
                 for (int i = 1; i < count; i++)
@@ -118,7 +130,6 @@ namespace RegularTool
                 dataTable.Rows.Add(row);
 
             }
-
             dataResult.ItemsSource = dataTable.DefaultView;
             statusMatchCount.Content = matchResults.Count;
             statusMatchSubCount.Content = count - 1;
@@ -129,13 +140,20 @@ namespace RegularTool
             tabOption.SelectedIndex = 3;
 
             if (string.IsNullOrWhiteSpace(txtRegular.Text) || string.IsNullOrWhiteSpace(txtContent.Text))
+            {
+                txtReplaceResult.Text = "";
                 return;
+            }
             Regex regex = new Regex(txtRegular.Text, rbMulti.IsChecked == true ? RegexOptions.Multiline : rbSingle.IsChecked == true ? RegexOptions.Singleline : RegexOptions.IgnoreCase);
 
             var isMatch = regex.IsMatch(txtContent.Text);
             if (isMatch)
             {
                 txtReplaceResult.Text = regex.Replace(txtContent.Text, txtReplace.Text);
+            }
+            else
+            {
+                txtReplaceResult.Text = "";
             }
         }
 
@@ -145,7 +163,7 @@ namespace RegularTool
 
             var code = "//matchResults为匹配到的结果,inputText为要匹配的内容";
             code += "\r\nstring inputText = \"\";";
-            code += "\r\nRegex regex = new Regex(@\""+txtRegular.Text+"\", " + (rbMulti.IsChecked == true ? "RegexOptions.Multiline" : rbSingle.IsChecked == true ? "RegexOptions.Singleline" : "RegexOptions.IgnoreCase") + ");";
+            code += "\r\nRegex regex = new Regex(@\"" + txtRegular.Text + "\", " + (rbMulti.IsChecked == true ? "RegexOptions.Multiline" : rbSingle.IsChecked == true ? "RegexOptions.Singleline" : "RegexOptions.IgnoreCase") + ");";
             code += "\r\nvar result = regex.Matches(inputText);";
             code += "\r\nList<List<string>> matchResults = new List<List<string>>();";
             code += "\r\nforeach (var item in result)" +
