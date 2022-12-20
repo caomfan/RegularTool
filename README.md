@@ -6,6 +6,7 @@
 
 
 ![](https://img.shields.io/github/v/release/caomfan/RegularTool)
+![](https://img.shields.io/github/downloads-pre/caomfan/RegularTool/v1.0/total)
 
 使用vs2019编译，软件快照如下：
 
